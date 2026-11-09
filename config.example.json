@@ -1,0 +1,15 @@
+{
+  "project_path": "/opt/opendrama",
+  "opencode_url": "http://127.0.0.1:4096",
+  "timezone": "Asia/Shanghai",
+  "poll_interval_seconds": 15,
+  "max_runtime_minutes": 540,
+  "completion_idle_seconds": 30,
+  "max_iterations": 4,
+  "continue_previous_session": true,
+  "session_title": "OpenDrama Autonomous R&D",
+  "report_dir": "reports/daily-research",
+  "progress_file": ".automation/PROGRESS.md",
+  "result_file": ".automation/RESULT.json",
+  "require_project_directory_match": true
+}
