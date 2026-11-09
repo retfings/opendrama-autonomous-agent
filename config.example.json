@@ -8,6 +8,16 @@
   "max_iterations": 4,
   "continue_previous_session": true,
   "session_title": "OpenDrama Autonomous R&D",
+  "agent": "build",
+  "model": {
+    "providerID": "deepseek",
+    "id": "deepseek-flash",
+    "variant": "max"
+  },
+  "block_on_waiting_user": false,
+  "wait_for_user_delay_minutes": 30,
+  "wait_for_user_max_retries": 10,
+  "wait_for_user_after_retries": "run",
   "report_dir": "reports/daily-research",
   "progress_file": ".automation/PROGRESS.md",
   "result_file": ".automation/RESULT.json",

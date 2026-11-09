@@ -1,3 +1,5 @@
 # Install in the opendrama-agent user's crontab.
+# The scheduler waits/retries internally when a project session is
+# waiting_for_user (see wait_for_user_* in config.json).
 CRON_TZ=Asia/Shanghai
-30 11 * * * cd /opt/opendrama-agent && /opt/opendrama-agent/.venv/bin/python -m opendrama_agent.cli run >> /opt/opendrama-agent/logs/cron.log 2>&1
+0 2 * * * cd /opt/opendrama-agent && /opt/opendrama-agent/.venv/bin/python -m opendrama_agent.cli run >> /opt/opendrama-agent/logs/cron.log 2>&1

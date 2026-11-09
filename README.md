@@ -6,7 +6,9 @@ A Linux scheduler that checks OpenCode sessions associated with an OpenDrama pro
 
 - Uses the OpenCode Server API, not process-name detection.
 - Only treats sessions whose `directory` matches the configured project directory as belonging to OpenDrama.
-- `busy` and `retry` statuses block a new run.
+- Distinguishes real work (`busy`/`retry`) from sessions waiting for a user answer (`waiting_for_user`), detected through V2's pending form and permission endpoints.
+- `busy` and `retry` block a new run.
+- `waiting_for_user` can be delayed instead of skipped: set `wait_for_user_delay_minutes` (e.g. 30) and `wait_for_user_max_retries` (e.g. 10). After the retries, `wait_for_user_after_retries` controls whether to run (`run`, default) or skip (`skip`). Set `block_on_waiting_user` to `true` to skip immediately without waiting.
 - Unknown/unresolvable session ownership fails closed (does not start another agent).
 - Uses `flock` to prevent concurrent scheduler invocations.
 - Persists the OpenCode session ID and progress files between runs.
@@ -17,7 +19,7 @@ A Linux scheduler that checks OpenCode sessions associated with an OpenDrama pro
 
 - Linux (Ubuntu/Debian recommended)
 - Python 3.10+
-- OpenCode installed and authenticated for the service user
+- OpenCode v2.x installed and authenticated for the service user
 - An OpenCode server bound to `127.0.0.1`
 - Git installed
 - A dedicated, unprivileged Linux user for this automation
@@ -53,28 +55,44 @@ cd /opt/opendrama
 opencode serve --hostname 127.0.0.1 --port 4096
 ```
 
-Configure Basic Auth using the OpenCode-supported server password environment variable for your installed version. Check the installed version's `opencode serve --help` and API docs before exposing any port. Never expose the unauthenticated server to the public internet.
+OpenCode V2 exposes its HTTP API under `/api` and uses HTTP Basic Auth with the username `opencode`. The password is stored in `~/.config/opencode/service.json`. Check the installed version's `opencode serve --help` and API docs before exposing any port. Never expose the unauthenticated server to the public internet.
 
 The server must be the same server instance used by the interactive OpenCode session you want to monitor. A separate server instance may not see sessions created by another instance.
 
 ## First-run checks
 
 ```bash
-curl -fsS http://127.0.0.1:4096/global/health
+curl -fsS -u "opencode:$OPENCODE_SERVER_PASSWORD" http://127.0.0.1:4096/api/info
 .venv/bin/python -m opendrama_agent.cli check
 .venv/bin/python -m opendrama_agent.cli run
 ```
 
-If Basic Auth is configured, use the matching credentials in `.env`. The `check` command prints the project sessions and their statuses. Do not enable unattended scheduling until you have verified that an interactive OpenCode session appears in this API and is recognized as belonging to the configured project.
+If Basic Auth is configured, set `OPENCODE_SERVER_USERNAME=opencode` and the matching password in `.env`. The `check` command prints the project sessions and their statuses. Do not enable unattended scheduling until you have verified that an interactive OpenCode session appears in this API and is recognized as belonging to the configured project.
 
-## Schedule: every day at 11:30 Asia/Shanghai
+Set `agent` and `model` in `config.json` to an authenticated provider/model. Without an explicit model, OpenCode may fall back to a free model and hit usage limits.
+
+## Tests
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+The tests cover state persistence, V2 session-location handling, response unwrapping, active-status mapping, and the V2 prompt payload.
+
+## Schedule: every day at 02:00 Asia/Shanghai
 
 Use a cron implementation that supports `CRON_TZ`:
 
 ```cron
 CRON_TZ=Asia/Shanghai
-30 11 * * * cd /opt/opendrama-agent && /opt/opendrama-agent/.venv/bin/python -m opendrama_agent.cli run >> /opt/opendrama-agent/logs/cron.log 2>&1
+0 2 * * * cd /opt/opendrama-agent && /opt/opendrama-agent/.venv/bin/python -m opendrama_agent.cli run >> /opt/opendrama-agent/logs/cron.log 2>&1
 ```
+
+If a project session is `waiting_for_user`, the scheduler waits
+`wait_for_user_delay_minutes` (default 30) and rechecks, up to
+`wait_for_user_max_retries` times (default 10, i.e. five hours). After the
+retries, `wait_for_user_after_retries=run` executes anyway; set it to `skip`
+to give up for that day.
 
 Alternatively set the server's system timezone to the desired timezone and use a normal cron entry. Verify with `timedatectl` and the cron implementation's documentation.
 

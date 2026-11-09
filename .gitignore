@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 .venv/
 .env
+config.json
 data/*.lock
+data/*.pid
 data/state.json
 logs/*.log

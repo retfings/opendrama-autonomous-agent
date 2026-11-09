@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opendrama-autonomous-agent"
-version = "0.1.0"
-description = "Daily OpenCode session-aware autonomous R&D scheduler for OpenDrama"
+version = "0.3.0"
+description = "Daily OpenCode V2 session-aware autonomous R&D scheduler for OpenDrama"
 requires-python = ">=3.10"
 dependencies = ["requests>=2.31,<3"]
 
