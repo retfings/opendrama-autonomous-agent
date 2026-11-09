@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opendrama-autonomous-agent"
+version = "0.1.0"
+description = "Daily OpenCode session-aware autonomous R&D scheduler for OpenDrama"
+requires-python = ">=3.10"
+dependencies = ["requests>=2.31,<3"]
+
+[project.scripts]
+opendrama-agent = "opendrama_agent.cli:main"
+
+[tool.setuptools]
+packages = ["opendrama_agent"]
