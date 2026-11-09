@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenCode Server for OpenDrama
+After=network.target
+
+[Service]
+Type=simple
+User=opendrama-agent
+WorkingDirectory=/opt/opendrama
+Environment=HOME=/home/opendrama-agent
+# Configure authentication using the supported environment variables for your OpenCode version.
+# Keep the server loopback-only; never expose it publicly.
+ExecStart=/usr/bin/opencode serve --hostname 127.0.0.1 --port 4096
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
